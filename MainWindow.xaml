@@ -4,28 +4,29 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:wrike_timer"
+        xmlns:lconv="clr-namespace:wrike_timer.Converters"
         mc:Ignorable="d"
         Title="Wrike Timer" WindowStyle="None" ShowInTaskbar="False" Topmost="True" Height="36" SizeToContent="Width" ResizeMode="NoResize" AllowsTransparency="True" Opacity="0.75">
     <Window.Resources>
         <Style x:Key="timerTogglePathStyle" TargetType="Path">
-            <Setter Property="Stroke" Value="Black" />
-            <Setter Property="StrokeLineJoin" Value="Miter" />
+            <Setter Property="Fill" Value="Black" />
+            <Setter Property="Width" Value="16" />
+            <Setter Property="Height" Value="16" />
         </Style>
         <Style x:Key="playPathStyle" TargetType="Path" BasedOn="{StaticResource timerTogglePathStyle}">
             <Style.Resources>
-                <PathGeometry x:Key="playGeometry" Figures="m 1.0720165 0 0 16 13.84375 -8 z" FillRule="Nonzero" />
+                <PathGeometry x:Key="playGeometry" Figures="m 4,3 0,10 8,-5 z" FillRule="Nonzero" />
             </Style.Resources>
-            <Setter Property="StrokeThickness" Value="4" />
-            <Setter Property="Clip" Value="{StaticResource playGeometry}" />
             <Setter Property="Data" Value="{StaticResource playGeometry}" />
         </Style>
         <Style x:Key="pausePathStyle" TargetType="Path" BasedOn="{StaticResource timerTogglePathStyle}">
             <Style.Resources>
-                <PathGeometry x:Key="pauseGeometry" Figures="m 11 0 0 16 z m -6 0 0 16 0 -16 z" FillRule="Nonzero" />
+                <PathGeometry x:Key="pauseGeometry" Figures="m 9,3 3,0 0,10 -3,0 z m -5,0 3,0 0,10 -3,0 z" FillRule="Nonzero" />
             </Style.Resources>
-            <Setter Property="StrokeThickness" Value="2" />
             <Setter Property="Data" Value="{StaticResource pauseGeometry}" />
         </Style>
+        <local:CustomStopwatch x:Key="activeTimer" />
+        <lconv:TruncateDoubleConverter x:Key="TruncateDoubleConverter" />
     </Window.Resources>
     <StackPanel Orientation="Horizontal" Margin="5,0">
         <Grid x:Name="dragHandle" Height="16" Width="20" Margin="5,0" Background="Transparent" Cursor="SizeAll" HorizontalAlignment="Center" VerticalAlignment="Center" MouseLeftButtonDown="dragHandle_MouseLeftButtonDown">
@@ -41,7 +42,7 @@
         <Button x:Name="timerToggle" Margin="5,0" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Click="timerToggle_Click">
             <StackPanel Orientation="Horizontal">
                 <Path x:Name="timerIcon" Width="16" Height="16" VerticalAlignment="Center" Style="{StaticResource playPathStyle}" />
-                <Label x:Name="timerAmount" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Content="0 00" FontWeight="Medium"/>
+                <Label x:Name="timerAmount" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Content="0 00" FontWeight="Medium" />
             </StackPanel>
         </Button>
     </StackPanel>
