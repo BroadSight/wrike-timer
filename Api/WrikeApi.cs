@@ -109,7 +109,14 @@ namespace wrike_timer.Api
             request.AddParameter("me", true, ParameterType.GetOrPost);
             request.AddParameter("fields", new JArray() { "metadata" }, ParameterType.GetOrPost);
 
-            return Execute<Model.Response<Model.Contact>>(request).Data.First();
+            return Execute<Model.Response<Model.Contact>>(request).Data.FirstOrDefault();
+        }
+
+        public List<Model.Workflow> GetWorkflows()
+        {
+            var request = new RestRequest("/workflows", Method.GET);
+
+            return Execute<Model.Response<Model.Workflow>>(request).Data;
         }
 
         public List<Model.Task> GetTasks(string title = null, IEnumerable<Model.StatusGroup> status = null,
@@ -167,6 +174,62 @@ namespace wrike_timer.Api
                 tasks.AddRange(Execute<Model.Response<Model.Task>>(request).Data);
             }
             return tasks;
+        }
+
+        public Model.Task ModifyTask(Model.Task task)
+        {
+            return ModifyTask(task.Id, task.Metadata);
+        }
+
+        public Model.Task ModifyTask(string taskId, IEnumerable<KeyValuePair<string, string>> metadata)
+        {
+            var request = new RestRequest("/tasks/{taskId}", Method.PUT);
+            request.AddParameter("taskId", taskId, ParameterType.UrlSegment);
+            request.AddParameter("metadata", new JArray(metadata.Select(d => new JObject() { ["key"] = d.Key, ["value"] = d.Value })), ParameterType.GetOrPost);
+            request.AddParameter("fields", new JArray() { "metadata" }, ParameterType.GetOrPost);
+
+            return Execute<Model.Response<Model.Task>>(request).Data.FirstOrDefault();
+        }
+
+        public List<Model.Timelog> GetTimelogs(DateTime since)
+        {
+            var request = new RestRequest("/timelogs", Method.GET);
+            request.AddParameter("trackedDate", new JObject() { ["start"] = since.ToString("yyyy-MM-ddTHH:mm:ssZ") }, ParameterType.GetOrPost);
+            request.AddParameter("me", true, ParameterType.GetOrPost);
+
+            return Execute<Model.Response<Model.Timelog>>(request).Data;
+        }
+
+        public Model.Timelog CreateTimelog(Model.Timelog timelog)
+        {
+            var request = new RestRequest("/tasks/{taskId}/timelogs", Method.POST);
+            request.AddParameter("taskId", timelog.TaskId, ParameterType.UrlSegment);
+            request.AddParameter("hours", timelog.Hours, ParameterType.GetOrPost);
+            request.AddParameter("trackedDate", timelog.TrackedDate.ToString("yyyy-MM-dd"), ParameterType.GetOrPost);
+            if (timelog.CategoryId != null)
+            {
+                request.AddParameter("categoryId", timelog.CategoryId, ParameterType.GetOrPost);
+            }
+            if (timelog.Comment != null)
+            {
+                request.AddParameter("comment", timelog.Comment, ParameterType.GetOrPost);
+            }
+
+            return Execute<Model.Response<Model.Timelog>>(request).Data.FirstOrDefault();
+        }
+
+        public List<Model.TimelogCategory> GetTimelogCategories()
+        {
+            var request = new RestRequest("/timelog_categories", Method.POST);
+
+            return Execute<Model.Response<Model.TimelogCategory>>(request).Data;
+        }
+
+        public List<Model.Color> GetColors()
+        {
+            var request = new RestRequest("/colors", Method.GET);
+
+            return Execute<Model.Response<Model.Color>>(request).Data;
         }
     }
 }

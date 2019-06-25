@@ -20,6 +20,8 @@ namespace wrike_timer.Api.Model
         public float Hours { get; set; }
 
         public DateTime TrackedDate { get; set; }
+
+        public string Comment { get; set; }
     }
 
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
