@@ -1,4 +1,5 @@
-﻿using RestSharp;
+﻿using Newtonsoft.Json.Linq;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -106,7 +107,7 @@ namespace wrike_timer.Api
         {
             var request = new RestRequest("/contacts", Method.GET);
             request.AddParameter("me", true, ParameterType.GetOrPost);
-            request.AddParameter("fields", new[] { "metadata" }, ParameterType.GetOrPost);
+            request.AddParameter("fields", new JArray() { "metadata" }, ParameterType.GetOrPost);
 
             return Execute<Model.Response<Model.Contact>>(request).Data.First();
         }
@@ -116,18 +117,18 @@ namespace wrike_timer.Api
            string metadataValue = null, IEnumerable<string> customStatuses = null)
         {
             var request = new RestRequest("/tasks", Method.GET);
-            request.AddParameter("fields", new[] { "metadata" }, ParameterType.GetOrPost);
+            request.AddParameter("fields", new JArray() { "metadata" }, ParameterType.GetOrPost);
             if (title != null)
             {
                 request.AddParameter("title", title, ParameterType.GetOrPost);
             }
             if (status != null)
             {
-                request.AddParameter("status", status, ParameterType.GetOrPost);
+                request.AddParameter("status", new JArray(status), ParameterType.GetOrPost);
             }
             if (responsibles != null)
             {
-                request.AddParameter("responsibles", responsibles, ParameterType.GetOrPost);
+                request.AddParameter("responsibles", new JArray(responsibles), ParameterType.GetOrPost);
             }
             if (permalink != null)
             {
@@ -137,16 +138,16 @@ namespace wrike_timer.Api
             {
                 if (metadataValue != null)
                 {
-                    request.AddParameter("metadata", new { key = metadataKey, value = metadataValue }, ParameterType.GetOrPost);
+                    request.AddParameter("metadata", new JObject() { ["key"] = metadataKey, ["value"] = metadataValue }, ParameterType.GetOrPost);
                 }
                 else
                 {
-                    request.AddParameter("metadata", new { key = metadataKey }, ParameterType.GetOrPost);
+                    request.AddParameter("metadata", new JObject() { ["key"] = metadataKey }, ParameterType.GetOrPost);
                 }
             }
             if (customStatuses != null)
             {
-                request.AddParameter("customStatuses", customStatuses, ParameterType.GetOrPost);
+                request.AddParameter("customStatuses", new JArray(customStatuses), ParameterType.GetOrPost);
             }
 
             return Execute<Model.Response<Model.Task>>(request).Data;
@@ -160,8 +161,8 @@ namespace wrike_timer.Api
             for (int count = 0; count < taskIds.Count(); count += requestLimit)
             {
                 var request = new RestRequest("/tasks/{taskIds}", Method.GET);
-                request.AddParameter("taskIds", taskIds.Skip(count).Take(count), ParameterType.UrlSegment);
-                request.AddParameter("fields", new[] { "metadata" }, ParameterType.GetOrPost);
+                request.AddParameter("taskIds", taskIds.Skip(count).Take(count).Aggregate((x, y) => $"{x},{y}"), ParameterType.UrlSegment);
+                request.AddParameter("fields", new JArray() { "metadata" }, ParameterType.GetOrPost);
 
                 tasks.AddRange(Execute<Model.Response<Model.Task>>(request).Data);
             }
