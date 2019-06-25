@@ -21,6 +21,7 @@
         </Style>
         <PathGeometry x:Key="playGeometry" Figures="m 1,0 0,10 8,-5 z" FillRule="Nonzero" />
         <PathGeometry x:Key="pauseGeometry" Figures="m 1,0 3,0 0,10 -3,0 z m 5,0 3,0 0,10 -3,0 z" FillRule="Nonzero" />
+        <PathGeometry x:Key="dropdownGeometry" Figures="m 0,2 10,0 -5,6 z" FillRule="Nonzero" />
         <lconv:TruncateDoubleConverter x:Key="TruncateDoubleConverter" />
     </Window.Resources>
     <StackPanel Orientation="Horizontal" Margin="5,0">
@@ -114,6 +115,39 @@
                     </StackPanel>
                 </ContentControl>
             </StackPanel>
+        </Button>
+        <Button x:Name="taskSelector">
+            <StackPanel Orientation="Horizontal" Height="{Binding Height, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}">
+                <StackPanel.Resources>
+                    <Style TargetType="ContentControl" BasedOn="{StaticResource buttonContentStyle}" />
+                </StackPanel.Resources>
+                <ContentControl>
+                    <TextBlock x:Name="taskName" Text="General 2019-06-01" />
+                </ContentControl>
+                <ContentControl>
+                    <Path VerticalAlignment="Center" Data="{StaticResource dropdownGeometry}" Style="{StaticResource buttonIconStyle}" />
+                </ContentControl>
+                <Popup x:Name="taskListPopup" AllowsTransparency="True" StaysOpen="False">
+                    <StackPanel MinWidth="{Binding Width, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Button}}}" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Opacity="0.75">
+                        <TextBlock>1:50 - Option 1</TextBlock>
+                        <TextBlock>Option 1</TextBlock>
+                        <TextBlock>Option 1</TextBlock>
+                    </StackPanel>
+                </Popup>
+            </StackPanel>
+            <Button.Triggers>
+                <EventTrigger RoutedEvent="Button.Click">
+                    <EventTrigger.Actions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <BooleanAnimationUsingKeyFrames Storyboard.TargetName="taskListPopup" Storyboard.TargetProperty="IsOpen">
+                                    <DiscreteBooleanKeyFrame KeyTime="0:0:0" Value="True" />
+                                </BooleanAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger.Actions>
+                </EventTrigger>
+            </Button.Triggers>
         </Button>
     </StackPanel>
 </Window>
