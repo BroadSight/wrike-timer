@@ -10,7 +10,13 @@ namespace wrike_timer
     {
         private const string PUNCT_SPACE = " ";
 
-        private bool _timerRunning = false;
+        public static readonly DependencyProperty ActiveTimerProperty =
+           DependencyProperty.Register("ActiveTimer", typeof(CustomStopwatch), typeof(MainWindow), new UIPropertyMetadata(new CustomStopwatch()));
+        public CustomStopwatch ActiveTimer
+        {
+            get { return (CustomStopwatch)this.GetValue(ActiveTimerProperty); }
+            set { this.SetValue(ActiveTimerProperty, value); }
+        }
 
         public MainWindow()
         {
@@ -24,17 +30,14 @@ namespace wrike_timer
 
         private void timerToggle_Click(object sender, RoutedEventArgs e)
         {
-            if (this._timerRunning)
+            if (this.ActiveTimer.IsRunning)
             {
-                this.timerAmount.Content = $"0{PUNCT_SPACE}00";
-                this.timerIcon.Style = (Style)this.Resources["pausePathStyle"];
+                this.ActiveTimer.Stop();
             }
             else
             {
-                this.timerAmount.Content = "0:00";
-                this.timerIcon.Style = (Style)this.Resources["playPathStyle"];
+                this.ActiveTimer.Start();
             }
-            this._timerRunning = !this._timerRunning;
         }
     }
 }

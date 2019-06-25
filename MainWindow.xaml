@@ -8,41 +8,111 @@
         mc:Ignorable="d"
         Title="Wrike Timer" WindowStyle="None" ShowInTaskbar="False" Topmost="True" Height="36" SizeToContent="Width" ResizeMode="NoResize" AllowsTransparency="True" Opacity="0.75">
     <Window.Resources>
-        <Style x:Key="timerTogglePathStyle" TargetType="Path">
-            <Setter Property="Fill" Value="Black" />
-            <Setter Property="Width" Value="16" />
-            <Setter Property="Height" Value="16" />
+        <Style x:Key="buttonContentStyle" TargetType="ContentControl">
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
-        <Style x:Key="playPathStyle" TargetType="Path" BasedOn="{StaticResource timerTogglePathStyle}">
-            <Style.Resources>
-                <PathGeometry x:Key="playGeometry" Figures="m 4,3 0,10 8,-5 z" FillRule="Nonzero" />
-            </Style.Resources>
-            <Setter Property="Data" Value="{StaticResource playGeometry}" />
+        <Style x:Key="buttonIconStyle" TargetType="Path">
+            <Setter Property="Fill" Value="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Button}}}" />
+            <Setter Property="Width" Value="10" />
+            <Setter Property="Height" Value="10" />
+            <!--<Setter Property="Margin" Value="2,0" />-->
         </Style>
-        <Style x:Key="pausePathStyle" TargetType="Path" BasedOn="{StaticResource timerTogglePathStyle}">
-            <Style.Resources>
-                <PathGeometry x:Key="pauseGeometry" Figures="m 9,3 3,0 0,10 -3,0 z m -5,0 3,0 0,10 -3,0 z" FillRule="Nonzero" />
-            </Style.Resources>
-            <Setter Property="Data" Value="{StaticResource pauseGeometry}" />
-        </Style>
-        <local:CustomStopwatch x:Key="activeTimer" />
+        <PathGeometry x:Key="playGeometry" Figures="m 1,0 0,10 8,-5 z" FillRule="Nonzero" />
+        <PathGeometry x:Key="pauseGeometry" Figures="m 1,0 3,0 0,10 -3,0 z m 5,0 3,0 0,10 -3,0 z" FillRule="Nonzero" />
         <lconv:TruncateDoubleConverter x:Key="TruncateDoubleConverter" />
     </Window.Resources>
     <StackPanel Orientation="Horizontal" Margin="5,0">
-        <Grid x:Name="dragHandle" Height="16" Width="20" Margin="5,0" Background="Transparent" Cursor="SizeAll" HorizontalAlignment="Center" VerticalAlignment="Center" MouseLeftButtonDown="dragHandle_MouseLeftButtonDown">
+        <StackPanel.Resources>
+            <Style TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="FontSize" Value="18" />
+                <Setter Property="Margin" Value="3,0" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </StackPanel.Resources>
+        <Grid x:Name="dragHandle" Height="12" Width="8" Margin="5,0" Background="Transparent" Cursor="SizeAll" HorizontalAlignment="Center" VerticalAlignment="Center" MouseLeftButtonDown="dragHandle_MouseLeftButtonDown">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Rectangle Height="2" Grid.Row="0" Fill="Black" HorizontalAlignment="Stretch" VerticalAlignment="Top" />
-            <Rectangle Height="2" Grid.Row="1" Fill="Black" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-            <Rectangle Height="2" Grid.Row="2" Fill="Black" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Ellipse Height="2" Width="2" Grid.Row="0" Grid.Column="0" Fill="Black" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Ellipse Height="2" Width="2" Grid.Row="0" Grid.Column="1" Fill="Black" HorizontalAlignment="Right" VerticalAlignment="Top" />
+            <Ellipse Height="2" Width="2" Grid.Row="1" Grid.Column="0" Fill="Black" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Ellipse Height="2" Width="2" Grid.Row="1" Grid.Column="1" Fill="Black" HorizontalAlignment="Right" VerticalAlignment="Center" />
+            <Ellipse Height="2" Width="2" Grid.Row="2" Grid.Column="0" Fill="Black" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+            <Ellipse Height="2" Width="2" Grid.Row="2" Grid.Column="1" Fill="Black" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
         </Grid>
-        <Button x:Name="timerToggle" Margin="5,0" Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Click="timerToggle_Click">
+        <Button x:Name="timerToggle" FontWeight="Medium" Click="timerToggle_Click" DataContext="{Binding ActiveTimer, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}">
             <StackPanel Orientation="Horizontal">
-                <Path x:Name="timerIcon" Width="16" Height="16" VerticalAlignment="Center" Style="{StaticResource playPathStyle}" />
-                <Label x:Name="timerAmount" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Content="0 00" FontWeight="Medium" />
+                <StackPanel.Resources>
+                    <Style TargetType="ContentControl" BasedOn="{StaticResource buttonContentStyle}" />
+                </StackPanel.Resources>
+                <ContentControl>
+                    <Path x:Name="timerIcon">
+                        <Path.Style>
+                            <Style TargetType="Path" BasedOn="{StaticResource buttonIconStyle}">
+                                <Setter Property="Data" Value="{StaticResource playGeometry}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRunning, FallbackValue=False}" Value="True">
+                                        <Setter Property="Data" Value="{StaticResource pauseGeometry}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                </ContentControl>
+                <ContentControl>
+                    <StackPanel Margin="2,0" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock x:Name="timerHours" Text="{Binding Elapsed.TotalHours, StringFormat=0, FallbackValue=0, Converter={StaticResource TruncateDoubleConverter}}" />
+                        <TextBlock x:Name="timerSeparator" Text=":">
+                            <TextBlock.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard x:Name="blinkStoryboard">
+                                                    <Storyboard FillBehavior="Stop">
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Duration="0:0:1" RepeatBehavior="Forever">
+                                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1.0" />
+                                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0.5" Value="0.0" />
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <StopStoryboard BeginStoryboardName="blinkStoryboard" />
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock x:Name="timerMinutes" Text="{Binding Elapsed.Minutes, StringFormat=00, FallbackValue=00}" />
+                    </StackPanel>
+                </ContentControl>
             </StackPanel>
         </Button>
     </StackPanel>
