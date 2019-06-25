@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>wrike_timer</RootNamespace>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>wrike-timer.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
