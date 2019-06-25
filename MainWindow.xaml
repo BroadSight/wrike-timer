@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:wrike_timer"
         xmlns:lconv="clr-namespace:wrike_timer.Converters"
         mc:Ignorable="d"
-        Title="Wrike Timer" WindowStyle="None" ShowInTaskbar="False" Topmost="True" Height="36" SizeToContent="Width" ResizeMode="NoResize" AllowsTransparency="True" Opacity="0.75">
+        Title="Wrike Timer" WindowStyle="None" ShowInTaskbar="False" Topmost="True" Height="36" SizeToContent="Width" ResizeMode="NoResize" AllowsTransparency="True" Opacity="0.75" UseLayoutRounding="True">
     <Window.Resources>
         <Style x:Key="buttonContentStyle" TargetType="ContentControl">
             <Setter Property="Margin" Value="2,0" />
