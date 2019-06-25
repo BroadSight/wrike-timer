@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -41,8 +42,14 @@ namespace wrike_timer
                 // * When file has been deleted
             }
 
-            if (string.IsNullOrEmpty((string)Application.Current.Properties[Constants.WrikeAuth.TokenAppPropKey]))
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+            if (Api.WrikeApi.AppHasRefreshToken)
             {
+                Resources.Add(Constants.ApiClientResourceKey, new Api.WrikeApi());
+            }
+            else
+            {
+                // LoginWindow will add the client to the app resources when finished
                 var login = new LoginWindow();
                 login.Show();
             }

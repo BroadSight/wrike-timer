@@ -60,47 +60,8 @@ namespace wrike_timer
             if (source.PartsEquals(Constants.WrikeAuth.RedirectUrl, UriComponents.HostAndPort))
             {
                 var query = HttpUtility.ParseQueryString(source.Query);
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-                HttpWebRequest request = WebRequest.CreateHttp(Constants.WrikeAuth.TokenUrl);
-                request.Method = "POST";
-                request.ContentType = "application/x-www-form-urlencoded";
-                var requestBody = string.Format("client_id={0}&client_secret={1}&grant_type=authorization_code&code={2}&redirect_uri={3}",
-                   HttpUtility.UrlEncode(Constants.WrikeAuth.ApiClientId),
-                   HttpUtility.UrlEncode(Constants.WrikeAuth.ApiClientSecret),
-                   HttpUtility.UrlEncode(query["code"]),
-                   HttpUtility.UrlEncode(Constants.WrikeAuth.RedirectUrl.ToString())
-                );
-                using (var requestStream = new StreamWriter(request.GetRequestStream()))
-                {
-                    requestStream.Write(requestBody);
-                }
-
-                try
-                {
-                    var response = (HttpWebResponse)request.GetResponse();
-                    using (var responseStream = new StreamReader(response.GetResponseStream()))
-                    {
-                        JToken responseBody = JToken.Parse(responseStream.ReadToEnd());
-                        Application.Current.Properties[Constants.WrikeAuth.TokenAppPropKey] = responseBody.Value<string>("refresh_token");
-                        // TODO: initialize API client with access token and host
-                    }
-                    this.Close();
-                }
-                catch (WebException ex)
-                {
-                    string responseBody = "";
-                    try
-                    {
-                        using (var stream = new StreamReader(ex.Response.GetResponseStream()))
-                        {
-                            responseBody = stream.ReadToEnd();
-                        }
-                    }
-                    catch (Exception) { }
-
-                    // TODO: make this message user-friendly
-                    MessageBox.Show($"{responseBody} {ex.ToString()}");
-                }
+                Application.Current.Resources.Add(Constants.ApiClientResourceKey, new Api.WrikeApi(query["code"]));
+                this.Close();
             }
         }
     }
