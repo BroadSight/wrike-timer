@@ -8,7 +8,8 @@ namespace wrike_timer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const string PUNCT_SPACE = " ";
+        private Api.WrikeApi _client;
+        private Api.Model.Contact _contact;
 
         public static readonly DependencyProperty ActiveTimerProperty =
            DependencyProperty.Register("ActiveTimer", typeof(CustomStopwatch), typeof(MainWindow), new UIPropertyMetadata(new CustomStopwatch()));
@@ -18,9 +19,12 @@ namespace wrike_timer
             set { this.SetValue(ActiveTimerProperty, value); }
         }
 
-        public MainWindow()
+        public MainWindow(Api.WrikeApi client)
         {
+            _client = client;
             InitializeComponent();
+
+            _contact = _client.GetUser();
         }
 
         private void dragHandle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

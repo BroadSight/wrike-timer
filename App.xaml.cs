@@ -45,7 +45,8 @@ namespace wrike_timer
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
             if (Api.WrikeApi.AppHasRefreshToken)
             {
-                Resources.Add(Constants.ApiClientResourceKey, new Api.WrikeApi());
+                var main = new MainWindow(new Api.WrikeApi());
+                main.Show();
             }
             else
             {

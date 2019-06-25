@@ -60,7 +60,8 @@ namespace wrike_timer
             if (source.PartsEquals(Constants.WrikeAuth.RedirectUrl, UriComponents.HostAndPort))
             {
                 var query = HttpUtility.ParseQueryString(source.Query);
-                Application.Current.Resources.Add(Constants.ApiClientResourceKey, new Api.WrikeApi(query["code"]));
+                var main = new MainWindow(new Api.WrikeApi(query["code"]));
+                main.Show();
                 this.Close();
             }
         }
