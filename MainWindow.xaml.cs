@@ -30,6 +30,8 @@ namespace wrike_timer
             InitializeComponent();
 
             _contact = _client.GetUser();
+            //ActiveTimers.Add(new CustomStopwatch(new Api.Model.Task() { Title = "General 2019-06-01" }));
+            //ActiveTimers.Add(new CustomStopwatch(new Api.Model.Task() { Title = "Wrike Admin Overhead" }));
         }
 
         private void dragHandle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
