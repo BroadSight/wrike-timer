@@ -36,17 +36,15 @@ namespace wrike_timer
             }
         }
 
-        public CustomStopwatch()
+        public Api.Model.Task Task { get; }
+
+        public CustomStopwatch(Api.Model.Task task, TimeSpan elapsed = new TimeSpan())
         {
-            this._elapsed = new TimeSpan();
+            this._elapsed = elapsed;
             this._timer = new Timer(1000);
             this._timer.AutoReset = true;
             this._timer.Elapsed += (s, e) => OnPropertyChanged(nameof(Elapsed));
-        }
-
-        public CustomStopwatch(TimeSpan elapsed)
-        {
-            this._elapsed = elapsed;
+            this.Task = task;
         }
 
         public void OnPropertyChanged(string name)

@@ -8,6 +8,36 @@
         mc:Ignorable="d"
         Title="Wrike Timer" WindowStyle="None" ShowInTaskbar="False" Topmost="True" Height="36" SizeToContent="Width" ResizeMode="NoResize" AllowsTransparency="True" Opacity="0.75" UseLayoutRounding="True">
     <Window.Resources>
+        <Style x:Key="defaultButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Margin" Value="3,0" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="IsEnabled" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="noTimerDisabledButtonStyle" TargetType="Button" BasedOn="{StaticResource defaultButtonStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ActiveTimers.Count, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}" Value="0">
+                    <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="buttonContentStyle" TargetType="ContentControl">
             <Setter Property="Margin" Value="2,0" />
             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -23,33 +53,11 @@
         <PathGeometry x:Key="pauseGeometry" Figures="m 1,0 3,0 0,10 -3,0 z m 5,0 3,0 0,10 -3,0 z" FillRule="Nonzero" />
         <PathGeometry x:Key="dropdownGeometry" Figures="m 0,2 10,0 -5,6 z" FillRule="Nonzero" />
         <lconv:TruncateDoubleConverter x:Key="TruncateDoubleConverter" />
+        <lconv:IntLessThanConverter x:Key="IntLessThanConverter" />
+        <lconv:TimeSpanToHoursMinutesStringConverter x:Key="TimeSpanToHoursMinutesStringConverter" />
     </Window.Resources>
-    <StackPanel Orientation="Horizontal" Margin="5,0">
-        <StackPanel.Resources>
-            <Style TargetType="Button">
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="BorderBrush" Value="Transparent" />
-                <Setter Property="FontSize" Value="18" />
-                <Setter Property="Margin" Value="3,0" />
-                <Setter Property="HorizontalAlignment" Value="Center" />
-                <Setter Property="VerticalAlignment" Value="Center" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-        </StackPanel.Resources>
-        <Grid x:Name="dragHandle" Height="12" Width="8" Margin="5,0" Background="Transparent" Cursor="SizeAll" HorizontalAlignment="Center" VerticalAlignment="Center" MouseLeftButtonDown="dragHandle_MouseLeftButtonDown">
+    <StackPanel Orientation="Horizontal" Margin="5,0" DataContext="{Binding ActiveTimers/, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}">
+        <Grid Height="12" Width="8" Margin="5,0" Background="Transparent" Cursor="SizeAll" HorizontalAlignment="Center" VerticalAlignment="Center" MouseLeftButtonDown="dragHandle_MouseLeftButtonDown">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
@@ -66,13 +74,13 @@
             <Ellipse Height="2" Width="2" Grid.Row="2" Grid.Column="0" Fill="Black" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
             <Ellipse Height="2" Width="2" Grid.Row="2" Grid.Column="1" Fill="Black" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
         </Grid>
-        <Button x:Name="timerToggle" FontWeight="Medium" Click="timerToggle_Click" DataContext="{Binding ActiveTimer, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}">
+        <Button FontWeight="Medium" Click="timerToggle_Click" Style="{StaticResource noTimerDisabledButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <StackPanel.Resources>
                     <Style TargetType="ContentControl" BasedOn="{StaticResource buttonContentStyle}" />
                 </StackPanel.Resources>
                 <ContentControl>
-                    <Path x:Name="timerIcon">
+                    <Path>
                         <Path.Style>
                             <Style TargetType="Path" BasedOn="{StaticResource buttonIconStyle}">
                                 <Setter Property="Data" Value="{StaticResource playGeometry}" />
@@ -87,8 +95,8 @@
                 </ContentControl>
                 <ContentControl>
                     <StackPanel Margin="2,0" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock x:Name="timerHours" Text="{Binding Elapsed.TotalHours, StringFormat=0, FallbackValue=0, Converter={StaticResource TruncateDoubleConverter}}" />
-                        <TextBlock x:Name="timerSeparator" Text=":">
+                        <TextBlock Text="{Binding Elapsed.TotalHours, StringFormat=0, FallbackValue=0, Converter={StaticResource TruncateDoubleConverter}}" />
+                        <TextBlock Text=":">
                             <TextBlock.Style>
                                 <Style>
                                     <Style.Triggers>
@@ -111,29 +119,32 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                        <TextBlock x:Name="timerMinutes" Text="{Binding Elapsed.Minutes, StringFormat=00, FallbackValue=00}" />
+                        <TextBlock Text="{Binding Elapsed.Minutes, StringFormat=00, FallbackValue=00}" />
                     </StackPanel>
                 </ContentControl>
             </StackPanel>
         </Button>
-        <Button x:Name="taskSelector">
-            <StackPanel Orientation="Horizontal" Height="{Binding Height, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}">
+        <Button>
+            <StackPanel Orientation="Horizontal">
                 <StackPanel.Resources>
                     <Style TargetType="ContentControl" BasedOn="{StaticResource buttonContentStyle}" />
                 </StackPanel.Resources>
                 <ContentControl>
-                    <TextBlock x:Name="taskName" Text="General 2019-06-01" />
+                    <TextBlock Text="{Binding Path=Task.Title, FallbackValue='No Task Selected'}" />
                 </ContentControl>
                 <ContentControl>
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl" BasedOn="{StaticResource buttonContentStyle}">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Value="True" Binding="{Binding ActiveTimers.Count, FallbackValue=True, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Converter={StaticResource IntLessThanConverter}, ConverterParameter=2}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
                     <Path VerticalAlignment="Center" Data="{StaticResource dropdownGeometry}" Style="{StaticResource buttonIconStyle}" />
                 </ContentControl>
-                <Popup x:Name="taskListPopup" AllowsTransparency="True" StaysOpen="False">
-                    <StackPanel MinWidth="{Binding Width, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Button}}}" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Opacity="0.75">
-                        <TextBlock>1:50 - Option 1</TextBlock>
-                        <TextBlock>Option 1</TextBlock>
-                        <TextBlock>Option 1</TextBlock>
-                    </StackPanel>
-                </Popup>
             </StackPanel>
             <Button.Triggers>
                 <EventTrigger RoutedEvent="Button.Click">
@@ -148,6 +159,49 @@
                     </EventTrigger.Actions>
                 </EventTrigger>
             </Button.Triggers>
+            <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource noTimerDisabledButtonStyle}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ActiveTimers.Count, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}" Value="1">
+                            <Setter Property="IsEnabled" Value="False" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
         </Button>
+        <Popup x:Name="taskListPopup" AllowsTransparency="True" StaysOpen="False" HorizontalOffset="12">
+            <ListBox Background="{Binding Background, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+                Opacity="{Binding Opacity, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+                ItemsSource="{Binding ActiveTimers, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+                IsSynchronizedWithCurrentItem="True" SelectionMode="Single" SelectionChanged="taskList_SelectionChanged" BorderBrush="{x:Null}" BorderThickness="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="18" />
+                                </Style>
+                            </StackPanel.Resources>
+                            <Path VerticalAlignment="Center">
+                                <Path.Style>
+                                    <Style TargetType="Path" BasedOn="{StaticResource buttonIconStyle}">
+                                        <Setter Property="Data" Value="{StaticResource playGeometry}" />
+                                        <Setter Property="Margin" Value="5,0,2,0" />
+                                        <Setter Property="Fill" Value="Black" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRunning, FallbackValue=False}" Value="True">
+                                                <Setter Property="Data" Value="{StaticResource pauseGeometry}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
+                            <TextBlock Text="{Binding Elapsed, FallbackValue=0:00, Converter={StaticResource TimeSpanToHoursMinutesStringConverter}}" Margin="4,0,7,0" FontWeight="Medium" />
+                            <TextBlock Text="{Binding Task.Title}" Margin="5,0" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Popup>
     </StackPanel>
 </Window>

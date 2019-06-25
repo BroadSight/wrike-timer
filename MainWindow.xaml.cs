@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace wrike_timer
@@ -11,12 +14,14 @@ namespace wrike_timer
         private Api.WrikeApi _client;
         private Api.Model.Contact _contact;
 
-        public static readonly DependencyProperty ActiveTimerProperty =
-           DependencyProperty.Register("ActiveTimer", typeof(CustomStopwatch), typeof(MainWindow), new UIPropertyMetadata(new CustomStopwatch()));
-        public CustomStopwatch ActiveTimer
+        private CustomStopwatch _activeTimer { get { return (CustomStopwatch)CollectionViewSource.GetDefaultView(ActiveTimers).CurrentItem; } }
+
+        public static readonly DependencyProperty ActiveTimersProperty =
+           DependencyProperty.Register("ActiveTimer", typeof(ObservableCollection<CustomStopwatch>), typeof(MainWindow), new UIPropertyMetadata(new ObservableCollection<CustomStopwatch>()));
+        public ObservableCollection<CustomStopwatch> ActiveTimers
         {
-            get { return (CustomStopwatch)this.GetValue(ActiveTimerProperty); }
-            set { this.SetValue(ActiveTimerProperty, value); }
+            get { return (ObservableCollection<CustomStopwatch>)this.GetValue(ActiveTimersProperty); }
+            set { this.SetValue(ActiveTimersProperty, value); }
         }
 
         public MainWindow(Api.WrikeApi client)
@@ -34,14 +39,19 @@ namespace wrike_timer
 
         private void timerToggle_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ActiveTimer.IsRunning)
+            if (this._activeTimer.IsRunning)
             {
-                this.ActiveTimer.Stop();
+                this._activeTimer.Stop();
             }
             else
             {
-                this.ActiveTimer.Start();
+                this._activeTimer.Start();
             }
+        }
+
+        private void taskList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }
